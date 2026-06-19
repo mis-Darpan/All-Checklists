@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Litpax Checklist App</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <button class="back-btn" id="backBtn" onclick="goHome()">←</button>
+  <div>
+    <h1 id="headerTitle">Litpax Checklists</h1>
+    <p>Litpax Technology Pvt. Ltd.</p>
+  </div>
+</div>
+
+<!-- ══ HOME SCREEN ══ -->
+<div id="home-screen">
+  <div class="container">
+
+    <div class="date-banner">
+      <div class="date">Aaj: <strong id="todayDate"></strong></div>
+    </div>
+
+    <div class="section-title">Checklists</div>
+
+    <div class="checklist-card" onclick="openChecklist('production')">
+      <div class="card-icon blue">🏭</div>
+      <div class="card-info">
+        <h3>Daily Production Checklist</h3>
+        <p>Subah · Din mein · Sham — Production Incharge</p>
+      </div>
+      <span class="card-status status-pending" id="status-production">Pending</span>
+      <span class="card-arrow">›</span>
+    </div>
+
+    <div class="checklist-card disabled">
+      <div class="card-icon green">🚚</div>
+      <div class="card-info">
+        <h3>Dispatch Checklist</h3>
+        <p>Coming soon — Kapil ke liye</p>
+      </div>
+      <span class="card-status status-pending">Soon</span>
+      <span class="card-arrow">›</span>
+    </div>
+
+    <div class="checklist-card disabled">
+      <div class="card-icon orange">📦</div>
+      <div class="card-info">
+        <h3>Store Inward Checklist</h3>
+        <p>Coming soon — Ajay ke liye</p>
+      </div>
+      <span class="card-status status-pending">Soon</span>
+      <span class="card-arrow">›</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ CHECKLIST SCREEN ══ -->
+<div id="checklist-screen">
+  <div class="container">
+
+    <div class="checklist-header">
+      <h2 id="cl-title"></h2>
+      <p id="cl-subtitle"></p>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progressBar"></div>
+      </div>
+      <div class="progress-text" id="progressText">0 / 0 complete</div>
+    </div>
+
+    <div id="checklist-body"></div>
+
+    <div class="submit-section">
+      <div class="loading-spinner" id="loadingSpinner">⏳ Saving...</div>
+      <button class="submit-btn" id="submitBtn" onclick="submitChecklist()">
+        ✅ Submit Checklist
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-box">
+    <div class="tick">✅</div>
+    <h2>Saved!</h2>
+    <p>Checklist Google Sheet mein save ho gayi.</p>
+    <button onclick="closeSuccess()">Home Pe Jao</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
