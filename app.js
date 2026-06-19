@@ -3,8 +3,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCg6ewGGjBAEzj4jD6E
 const CHECKLISTS = {
   production: {
     name: "Daily Production Checklist",
-    subtitle: "Sham ko fill karein — Ek baar",
-    time: "🕔 Sham 5:00 PM",
+    subtitle: "Roz fill karein",
     items: [
       {
         id: "p1",
@@ -88,7 +87,6 @@ function openChecklist(key) {
 
   const cl = CHECKLISTS[key];
   document.getElementById("cl-title").textContent = cl.name;
-  document.getElementById("cl-time").textContent = cl.time;
   document.getElementById("headerTitle").textContent = cl.name;
   document.getElementById("backBtn").classList.add("show");
 
