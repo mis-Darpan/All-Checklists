@@ -1,7 +1,7 @@
 // ══════════════════════════════════
 // CONFIG
 // ══════════════════════════════════
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-VR53nDijzK9kugVXvIS3oTXlZePKVqvLOOWW8IfSJZEdS6d4-r54xQPIDM47WlmFsg/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCg6ewGGjBAEzj4jD6EFJEoZdi8GClZjUHGYogtyAZK_NfylZhmitJW2b_urClYdL76w/exec";
 
 // ══════════════════════════════════
 // CHECKLISTS DATA
@@ -9,42 +9,20 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-VR53nDijzK9kugVXv
 const CHECKLISTS = {
   production: {
     name: "Daily Production Checklist",
-    subtitle: "Production Department — Roz fill karein",
+    subtitle: "Roz sham ko fill karein",
     sections: [
       {
-        id: "subah",
-        title: "🌅 SUBAH — Shift Start (8:00 AM se Pehle)",
+        id: "production",
+        title: "📋 Daily Production Checklist",
         colorClass: "subah",
         items: [
-          { id: "s1", label: "Attendance li — kaun aaya, kaun nahi", star: false },
-          { id: "s2", label: "Absent ke liye backup assign kiya", star: true },
-          { id: "s3", label: "Aaj ki production slip dekhi — ERP se", star: false },
-          { id: "s4", label: "Kal maanga material aaj subh mila — Ajay se confirm kiya", star: true },
-          { id: "s5", label: "Har worker ko kaam assign kiya", star: false },
-        ]
-      },
-      {
-        id: "dinmein",
-        title: "⚙️ DIN MEIN — Production Ke Dauran",
-        colorClass: "dinmein",
-        items: [
-          { id: "d1", label: "2 ghante baad progress check kiya", star: false },
-          { id: "d2", label: "Defective pieces alag kiye aur count note kiya", star: false },
-          { id: "d3", label: "Batch number record kiya", star: false },
-          { id: "d4", label: "ERP / IMS mein WIP update kiya", star: false },
-        ]
-      },
-      {
-        id: "sham",
-        title: "🌆 SHAM — Shift End (5:00 PM)",
-        colorClass: "sham",
-        items: [
-          { id: "sh1", label: "Aaj total production note ki — Target vs Actual", star: false },
-          { id: "sh2", label: "Pending orders note kiye", star: false },
-          { id: "sh3", label: "Kal ki production slip check ki", star: false },
-          { id: "sh4", label: "Kal ka material list banai aur Ajay ko di", star: true },
-          { id: "sh5", label: "Ajay ne confirm kiya — material available hai", star: true },
-          { id: "sh6", label: "ERP mein aaj ki summary update ki", star: false },
+          { id: "p1", label: "Did you receive tomorrow Parchi?", type: "yesno" },
+          { id: "p2", label: "Aaj ka Production Kitna complete hua?", type: "percent" },
+          { id: "p3", label: "Kal k liye raw material pura hai or store se mil gya hai?", type: "yesno" },
+          { id: "p4", label: "Kya aap kal k liye Box lekar aaye ho?", type: "yesno" },
+          { id: "p5", label: "Kal kon kya kaam krega, uski planning hogyi hai?", type: "yesno" },
+          { id: "p6", label: "Machine sahi se chal rhi hai?", type: "yesno" },
+          { id: "p7", label: "Kya kal k Action Point likh diye hai?", type: "yesno" },
         ]
       }
     ]
@@ -55,7 +33,7 @@ const CHECKLISTS = {
 // STATE
 // ══════════════════════════════════
 let currentChecklist = null;
-let checkedItems = {};
+let answers = {};
 let submittedToday = {};
 
 // ══════════════════════════════════
@@ -92,7 +70,7 @@ function updateHomeStatuses() {
 // ══════════════════════════════════
 function openChecklist(key) {
   currentChecklist = key;
-  checkedItems = {};
+  answers = {};
 
   const cl = CHECKLISTS[key];
   document.getElementById("cl-title").textContent = cl.name;
@@ -132,43 +110,90 @@ function renderChecklist(cl) {
     hdr.textContent = section.title;
     block.appendChild(hdr);
 
-    section.items.forEach(item => {
+    section.items.forEach((item, idx) => {
       const row = document.createElement("div");
-      row.className = `check-item ${item.star ? "star-item" : ""}`;
+      row.className = "check-item";
       row.id = "item-" + item.id;
-      row.onclick = () => toggleItem(item.id);
 
-      row.innerHTML = `
-        <div class="checkbox" id="cb-${item.id}"></div>
-        <div class="item-text">
-          <div class="label">
-            ${item.star ? "⭐ " : ""}${item.label}
-            ${item.star ? '<span class="star-badge">Zaroori</span>' : ""}
+      if (item.type === "yesno") {
+        row.innerHTML = `
+          <div class="item-number">${idx + 1}</div>
+          <div class="item-text">
+            <div class="label">${item.label}</div>
+            <div class="yn-buttons">
+              <button class="yn-btn yes-btn" id="yes-${item.id}" onclick="setYesNo('${item.id}', 'Yes')">✅ Yes</button>
+              <button class="yn-btn no-btn"  id="no-${item.id}"  onclick="setYesNo('${item.id}', 'No')">❌ No</button>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      } else if (item.type === "percent") {
+        row.innerHTML = `
+          <div class="item-number">${idx + 1}</div>
+          <div class="item-text">
+            <div class="label">${item.label}</div>
+            <div class="pct-buttons">
+              <button class="pct-btn" id="pct-70-${item.id}" onclick="setPercent('${item.id}', '70%')">70%</button>
+              <button class="pct-btn" id="pct-80-${item.id}" onclick="setPercent('${item.id}', '80%')">80%</button>
+              <button class="pct-btn" id="pct-90-${item.id}" onclick="setPercent('${item.id}', '90%')">90%</button>
+              <button class="pct-btn" id="pct-100-${item.id}" onclick="setPercent('${item.id}', '100%')">100%</button>
+            </div>
+          </div>
+        `;
+      }
+
       block.appendChild(row);
     });
 
+    // Collected by / Checked by
+    const sigBlock = document.createElement("div");
+    sigBlock.className = "sig-block";
+    sigBlock.innerHTML = `
+      <div class="sig-row">
+        <label>Collected by:</label>
+        <input type="text" id="collectedBy" placeholder="Naam likho..." />
+      </div>
+      <div class="sig-row">
+        <label>Checked by:</label>
+        <input type="text" id="checkedBy" placeholder="Naam likho..." />
+      </div>
+    `;
+    block.appendChild(sigBlock);
     body.appendChild(block);
   });
 }
 
 // ══════════════════════════════════
-// TOGGLE
+// YES / NO
 // ══════════════════════════════════
-function toggleItem(id) {
-  checkedItems[id] = !checkedItems[id];
-  const row = document.getElementById("item-" + id);
-  const cb  = document.getElementById("cb-" + id);
+function setYesNo(id, val) {
+  answers[id] = val;
 
-  if (checkedItems[id]) {
-    row.classList.add("checked");
-    cb.textContent = "✓";
-  } else {
-    row.classList.remove("checked");
-    cb.textContent = "";
-  }
+  const yesBtn = document.getElementById("yes-" + id);
+  const noBtn  = document.getElementById("no-" + id);
+
+  yesBtn.classList.remove("selected-yes");
+  noBtn.classList.remove("selected-no");
+
+  if (val === "Yes") yesBtn.classList.add("selected-yes");
+  else               noBtn.classList.add("selected-no");
+
+  updateProgress();
+}
+
+// ══════════════════════════════════
+// PERCENT
+// ══════════════════════════════════
+function setPercent(id, val) {
+  answers[id] = val;
+
+  ["70%","80%","90%","100%"].forEach(p => {
+    const btn = document.getElementById("pct-" + p.replace("%","") + "-" + id);
+    if (btn) btn.classList.remove("selected-pct");
+  });
+
+  const selected = document.getElementById("pct-" + val.replace("%","") + "-" + id);
+  if (selected) selected.classList.add("selected-pct");
+
   updateProgress();
 }
 
@@ -181,12 +206,12 @@ function updateProgress() {
   let total = 0, done = 0;
   cl.sections.forEach(s => s.items.forEach(item => {
     total++;
-    if (checkedItems[item.id]) done++;
+    if (answers[item.id]) done++;
   }));
 
   const pct = total ? Math.round((done / total) * 100) : 0;
   document.getElementById("progressBar").style.width = pct + "%";
-  document.getElementById("progressText").textContent = `${done} / ${total} complete (${pct}%)`;
+  document.getElementById("progressText").textContent = `${done} / ${total} answered (${pct}%)`;
 }
 
 // ══════════════════════════════════
@@ -196,13 +221,21 @@ function submitChecklist() {
   if (!currentChecklist) return;
   const cl = CHECKLISTS[currentChecklist];
 
+  const collectedBy = document.getElementById("collectedBy").value.trim();
+  const checkedBy   = document.getElementById("checkedBy").value.trim();
+
+  if (!collectedBy) {
+    alert("Collected by ka naam likho!");
+    return;
+  }
+
   const items = [];
   cl.sections.forEach(section => {
     section.items.forEach(item => {
       items.push({
-        section: section.title.replace(/[🌅⚙️🌆]/g, "").trim(),
+        section: "Daily Production",
         label: item.label,
-        checked: !!checkedItems[item.id]
+        answer: answers[item.id] || "—"
       });
     });
   });
@@ -215,7 +248,9 @@ function submitChecklist() {
     body: JSON.stringify({
       action: "submitChecklist",
       checklistName: cl.name,
-      items: items
+      collectedBy,
+      checkedBy,
+      items
     })
   })
   .then(r => r.json())
